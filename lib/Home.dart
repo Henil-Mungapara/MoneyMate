@@ -2,8 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moneymate/PaymentHistoryPage.dart';
+import 'package:moneymate/qr_page.dart';
+import 'package:moneymate/qr_scanner_page.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'fillupform_page.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
+
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -136,29 +142,37 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _openCheckout(int amount) {
+  void _openCheckout(int amount) async {
     _lastPaidAmount = amount;
 
-    var options = {
-      'key': 'rzp_test_b1q4VYFIW1Kf0g', // Replace with your key
-      'amount': amount * 100,
-      'name': 'MoneyMate',
-      'description': 'Custom Amount Payment',
-      'prefill': {
-        'contact': '8888888888',
-        'email': 'test@example.com',
-      },
-      'external': {
-        'wallets': ['paytm']
+    if (kIsWeb) {
+      // Web: open Razorpay payment link
+      const url = 'https://rzp.io/rzp/p1RTXb8'; // Replace with your link
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        throw 'Could not launch $url';
       }
-    };
+    } else {
+      // Mobile: use Razorpay plugin
+      var options = {
+        'key': 'rzp_test_RCaZ2jKYT42rIc', // Test Key ID
+        'amount': amount * 100, // in paise
+        'name': 'MoneyMate',
+        'description': 'Custom Amount Payment',
+        'prefill': {'contact': '8888888888', 'email': 'test@example.com'},
+        'external': {'wallets': ['paytm']}
+      };
 
-    try {
-      _razorpay.open(options);
-    } catch (e) {
-      debugPrint('Error: $e');
+      try {
+        _razorpay.open(options);
+      } catch (e) {
+        debugPrint('Error: $e');
+      }
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -257,34 +271,21 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
         child: Row(
           children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _showAmountDialog,
-                icon: const Icon(Icons.payment, color: Colors.white),
-                label: const Text("Payment", style: TextStyle(color: Colors.white)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B2E33),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
+            // 1. Scanner Button
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // 👉 Navigate to your payment history page (you need to create it)
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const Paymenthistorypage(), // You need to implement this page
-                    ),
+                    MaterialPageRoute(builder: (context) => QRScannerPage()), // Replace QrPage() with your actual QR page widget
                   );
                 },
-                icon: const Icon(Icons.history, color: Colors.white),
-                label: const Text("History", style: TextStyle(color: Colors.white)),
+
+                icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
+                label: const Text(
+                  "Scan",
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0B2E33),
                   shape: RoundedRectangleBorder(
@@ -295,6 +296,58 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(width: 8),
+
+            // 2. My QR Button
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyQRPage()), // Replace QrPage() with your actual QR page widget
+                  );
+                },
+                icon: const Icon(Icons.qr_code, color: Colors.white),
+                label: const Text(
+                  "My QR",
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0B2E33),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // 3. History Button (Keep as it is)
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Paymenthistorypage()),
+                  );
+                },
+                icon: const Icon(Icons.history, color: Colors.white),
+                label: const Text(
+                  "History",
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0B2E33),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // 4. Add Transaction Button (Keep as it is)
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () async {
@@ -306,19 +359,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
                 icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text("Transection", style: TextStyle(color: Colors.white)),
+                label: const Text(
+                  "Entry",
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0B2E33),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
             ),
           ],
         ),
       ),
+
 
     );
   }

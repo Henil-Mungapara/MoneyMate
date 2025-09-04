@@ -1,11 +1,16 @@
-# Project-level configuration.
+# -----------------------------
+# Project-level configuration
+# -----------------------------
 cmake_minimum_required(VERSION 3.14)
 project(moneymate LANGUAGES CXX)
 
+# The name of the executable
 set(BINARY_NAME "moneymate")
 
+# Opt in to modern CMake behaviors
 cmake_policy(VERSION 3.14...3.25)
 
+# Build type setup
 get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(IS_MULTICONFIG)
   set(CMAKE_CONFIGURATION_TYPES "Debug;Profile;Release" CACHE STRING "" FORCE)
@@ -16,40 +21,45 @@ else()
   endif()
 endif()
 
+# Fix PROFILE linker flags
 set(CMAKE_EXE_LINKER_FLAGS_PROFILE "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 set(CMAKE_SHARED_LINKER_FLAGS_PROFILE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
 
+# Use Unicode
 add_definitions(-DUNICODE -D_UNICODE)
 
+# -----------------------------
+# Standard compilation settings
+# -----------------------------
 function(APPLY_STANDARD_SETTINGS TARGET)
   target_compile_features(${TARGET} PUBLIC cxx_std_17)
-  target_compile_options(${TARGET} PRIVATE /W4 /WX /wd"4100")
-  target_compile_options(${TARGET} PRIVATE /EHsc)
-  target_compile_definitions(${TARGET} PRIVATE "_HAS_EXCEPTIONS=0")
-  target_compile_definitions(${TARGET} PRIVATE "$<$<CONFIG:Debug>:_DEBUG>")
+  target_compile_options(${TARGET} PRIVATE /W4 /WX /wd4100 /EHsc)
+  target_compile_definitions(${TARGET} PRIVATE "_HAS_EXCEPTIONS=0" "$<$<CONFIG:Debug>:_DEBUG>")
 endfunction()
 
+# -----------------------------
 # Flutter setup
+# -----------------------------
 set(FLUTTER_MANAGED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/flutter")
 add_subdirectory(${FLUTTER_MANAGED_DIR})
 
-# ✅ Firebase SDK Setup
-set(FIREBASE_CPP_SDK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/firebase_cpp_sdk_13.0.0")
-include_directories(${FIREBASE_CPP_SDK_DIR})
-add_subdirectory(${FIREBASE_CPP_SDK_DIR} firebase EXCLUDE_FROM_ALL)
+# -----------------------------
+# Add runner (creates the actual executable)
+# -----------------------------
+add_subdirectory("runner")  # runner/CMakeLists.txt must create ${BINARY_NAME} target
 
-# App build
-add_subdirectory("runner")
-
-# Flutter plugins
+# -----------------------------
+# Generated plugin build rules
+# -----------------------------
 include(flutter/generated_plugins.cmake)
 
-# === Installation ===
+# -----------------------------
+# Installation
+# -----------------------------
 set(BUILD_BUNDLE_DIR "$<TARGET_FILE_DIR:${BINARY_NAME}>")
 set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
-
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
 endif()
@@ -65,11 +75,32 @@ if(PLUGIN_BUNDLED_LIBRARIES)
   install(FILES "${PLUGIN_BUNDLED_LIBRARIES}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}" COMPONENT Runtime)
 endif()
 
+# Copy native assets
 set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/windows/")
 install(DIRECTORY "${NATIVE_ASSETS_DIR}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}" COMPONENT Runtime)
 
+# Fully re-copy flutter assets to avoid stale files
 set(FLUTTER_ASSET_DIR_NAME "flutter_assets")
 install(CODE "file(REMOVE_RECURSE \"${INSTALL_BUNDLE_DATA_DIR}/${FLUTTER_ASSET_DIR_NAME}\")" COMPONENT Runtime)
 install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}" COMPONENT Runtime)
 
+# Install the AOT library on non-Debug builds
 install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}" CONFIGURATIONS Profile;Release COMPONENT Runtime)
+
+# -----------------------------
+# POST_BUILD commands
+# Must be added **after the executable target exists**
+# -----------------------------
+# Copy Flutter assets
+add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${PROJECT_BUILD_DIR}/flutter_assets"
+    "$<TARGET_FILE_DIR:${BINARY_NAME}>/data/flutter_assets"
+)
+
+# Copy Firebase DLLs
+add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_CURRENT_SOURCE_DIR}/../build/windows/x64/extracted/firebase_cpp_sdk_windows/libs"
+    "$<TARGET_FILE_DIR:${BINARY_NAME}>"
+)

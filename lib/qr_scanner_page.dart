@@ -1,0 +1,158 @@
+import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:moneymate/bottom_navigation_page.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+class QRScannerPage extends StatefulWidget {
+  const QRScannerPage({Key? key}) : super(key: key);
+
+  @override
+  State<QRScannerPage> createState() => _QRScannerPageState();
+}
+
+class _QRScannerPageState extends State<QRScannerPage>
+    with SingleTickerProviderStateMixin {
+  String scannedResult = "";
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Animation for the moving scan line
+    _controller =
+    AnimationController(vsync: this, duration: const Duration(seconds: 2))
+      ..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0, end: 1).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _launchUPILink(String upiLink) async {
+    final Uri uri = Uri.parse(upiLink);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("❌ Cannot open UPI app")),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final scanSize = size.width * 0.8;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text(
+          "Scan QR Code",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF0B2E33),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const BottomNavigationPage()),
+            );
+          },
+        ),
+      ),
+      body: Stack(
+        children: [
+          // Scanner view
+          MobileScanner(
+            onDetect: (capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              if (barcodes.isNotEmpty) {
+                final code = barcodes.first.rawValue;
+                if (code != null && code.isNotEmpty) {
+                  // QR code detected → enable button
+                  setState(() {
+                    scannedResult = code;
+                  });
+                }
+              } else {
+                // No QR code in view → disable button
+                setState(() {
+                  scannedResult = "";
+                });
+              }
+            },
+          ),
+
+          // Overlay with cutout
+          Container(
+            color: Colors.black.withOpacity(0.6),
+            child: Center(
+              child: SizedBox(
+                width: scanSize,
+                height: scanSize,
+                child: Stack(
+                  children: [
+                    // Transparent rectangle
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white, width: 2),
+                        color: Colors.transparent,
+                      ),
+                    ),
+                    // Animated scan line
+                    AnimatedBuilder(
+                      animation: _animation,
+                      builder: (context, child) {
+                        return Positioned(
+                          top: _animation.value * scanSize,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            height: 2,
+                            color: Colors.greenAccent,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Send button
+          Positioned(
+            bottom: 40,
+            left: 40,
+            right: 40,
+            child: ElevatedButton(
+              onPressed:
+              scannedResult.isEmpty ? null : () => _launchUPILink(scannedResult),
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                scannedResult.isEmpty ? Colors.grey : Colors.teal,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                "Send Test Money",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
