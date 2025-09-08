@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:moneymate/bottom_navigation_page.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:qr_code_tools/qr_code_tools.dart';
+import 'dart:io';
 
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({Key? key}) : super(key: key);
@@ -20,7 +23,7 @@ class _QRScannerPageState extends State<QRScannerPage>
   void initState() {
     super.initState();
 
-    // Animation for the moving scan line
+    // Animation for scan line
     _controller =
     AnimationController(vsync: this, duration: const Duration(seconds: 2))
       ..repeat(reverse: true);
@@ -40,6 +43,37 @@ class _QRScannerPageState extends State<QRScannerPage>
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("❌ Cannot open UPI app")),
+      );
+    }
+  }
+
+  /// Pick image from gallery and scan QR
+  Future<void> _scanFromGallery() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image == null) return;
+
+      // Extract QR code from image
+      final qrCode = await QrCodeToolsPlugin.decodeFrom(image.path);
+
+      if (qrCode != null && qrCode.isNotEmpty) {
+        setState(() {
+          scannedResult = qrCode;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("✅ QR Code detected from gallery!")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("⚠️ No QR code found in this image")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ Error: $e")),
       );
     }
   }
@@ -77,13 +111,11 @@ class _QRScannerPageState extends State<QRScannerPage>
               if (barcodes.isNotEmpty) {
                 final code = barcodes.first.rawValue;
                 if (code != null && code.isNotEmpty) {
-                  // QR code detected → enable button
                   setState(() {
                     scannedResult = code;
                   });
                 }
               } else {
-                // No QR code in view → disable button
                 setState(() {
                   scannedResult = "";
                 });
@@ -91,7 +123,7 @@ class _QRScannerPageState extends State<QRScannerPage>
             },
           ),
 
-          // Overlay with cutout
+          // Overlay cutout
           Container(
             color: Colors.black.withOpacity(0.6),
             child: Center(
@@ -100,7 +132,6 @@ class _QRScannerPageState extends State<QRScannerPage>
                 height: scanSize,
                 child: Stack(
                   children: [
-                    // Transparent rectangle
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
@@ -108,7 +139,6 @@ class _QRScannerPageState extends State<QRScannerPage>
                         color: Colors.transparent,
                       ),
                     ),
-                    // Animated scan line
                     AnimatedBuilder(
                       animation: _animation,
                       builder: (context, child) {
@@ -129,26 +159,47 @@ class _QRScannerPageState extends State<QRScannerPage>
             ),
           ),
 
-          // Send button
+          // Buttons section
           Positioned(
-            bottom: 40,
-            left: 40,
-            right: 40,
-            child: ElevatedButton(
-              onPressed:
-              scannedResult.isEmpty ? null : () => _launchUPILink(scannedResult),
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                scannedResult.isEmpty ? Colors.grey : Colors.teal,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            bottom: 30,
+            left: 20,
+            right: 20,
+            child: Column(
+              children: [
+                ElevatedButton(
+                  onPressed: scannedResult.isEmpty
+                      ? null
+                      : () => _launchUPILink(scannedResult),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                    scannedResult.isEmpty ? Colors.grey : Colors.teal,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "Send Test Money",
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
                 ),
-              ),
-              child: const Text(
-                "Send Test Money",
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
+                const SizedBox(height: 10),
+                ElevatedButton.icon(
+                  onPressed: _scanFromGallery,
+                  icon: const Icon(Icons.photo, color: Colors.white),
+                  label: const Text(
+                    "Scan from Gallery",
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF4F7C82),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

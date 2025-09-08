@@ -49,7 +49,7 @@ class ProfilePage extends StatelessWidget {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => ReportPage()),
+              MaterialPageRoute(builder: (_) => BottomNavigationPage()),
             );
           },
         ),

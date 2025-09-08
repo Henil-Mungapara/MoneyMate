@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:moneymate/Entry_page.dart';
+import 'package:moneymate/bottom_navigation_page.dart';
 
 class ChartPage extends StatelessWidget {
   const ChartPage({super.key});
@@ -32,7 +33,7 @@ class ChartPage extends StatelessWidget {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => EntryPage()),
+              MaterialPageRoute(builder: (context) => BottomNavigationPage()),
             );
           },
         ),

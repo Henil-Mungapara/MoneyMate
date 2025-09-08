@@ -52,7 +52,12 @@ dependencies:
     # For scanning QR codes (supports mobile + web + desktop)
   mobile_scanner: ^3.5.3
   fl_chart: ^0.50.1
-
+  pdf: ^3.11.0
+  printing: ^5.10.0
+  path_provider: ^2.0.15
+  open_file: ^3.2.1
+  universal_html: ^2.2.4
+  qr_code_tools: ^0.2.0
 
 
 
@@ -76,7 +81,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png" # Make sure this file exists
+  image_path: "assets/images/moneymate.png" # Make sure this file exists
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -88,8 +93,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/logo.png
-    - assets/animation/cE3LWBl78L.json  # This is required for flutter_launcher_icons
+    - assets/images/moneymate.png # This is required for flutter_launcher_icons
+    - assets/animation/cE3LWBl78L.json
+    - assets/fonts/NotoSans-Regular.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

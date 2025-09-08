@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:moneymate/Chart_page.dart';
+import 'package:moneymate/bottom_navigation_page.dart';
+import 'report_view_page.dart';
 
 class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
@@ -9,12 +13,10 @@ class ReportPage extends StatefulWidget {
 }
 
 class _ReportPageState extends State<ReportPage> {
-  String? selectedOption; // default null = "Select Date"
+  String? selectedOption;
   DateTime? specificDate;
   DateTime? fromDate;
   DateTime? toDate;
-  DateTime? allOverDate;
-
   final DateFormat dateFormat = DateFormat('dd-MM-yyyy');
 
   Future<void> pickDate(BuildContext context, Function(DateTime) onPicked) async {
@@ -31,20 +33,26 @@ class _ReportPageState extends State<ReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    final String userId = FirebaseAuth.instance.currentUser!.uid; // ✅ Dynamic user ID
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFB8E3E9),
       appBar: AppBar(
-        title: const Text('Report'),
+        title: const Text('Report Analysis'),
         backgroundColor: const Color(0xFF0B2E33),
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => BottomNavigationPage()),
+            );
+          },
         ),
       ),
       body: Column(
         children: [
-          // Top attractive full-width section
           Container(
             width: double.infinity,
             color: const Color(0xFF0B2E33),
@@ -52,7 +60,6 @@ class _ReportPageState extends State<ReportPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Dropdown
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
@@ -75,45 +82,36 @@ class _ReportPageState extends State<ReportPage> {
                     onChanged: (value) {
                       setState(() {
                         selectedOption = value;
-                        // reset dates when option changes
                         specificDate = null;
                         fromDate = null;
                         toDate = null;
-                        allOverDate = null;
                       });
                     },
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                // Date pickers in horizontal row
+                // Specific Date
                 if (selectedOption == 'Specific Date')
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF0B2E33),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onPressed: () {
-                            pickDate(context, (date) {
-                              setState(() {
-                                specificDate = date;
-                              });
-                            });
-                          },
-                          child: Text(specificDate == null
-                              ? 'Select Date'
-                              : dateFormat.format(specificDate!)),
-                        ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF0B2E33),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
+                    ),
+                    onPressed: () {
+                      pickDate(context, (date) {
+                        setState(() => specificDate = date);
+                      });
+                    },
+                    child: Text(specificDate == null
+                        ? 'Select Date'
+                        : dateFormat.format(specificDate!)),
                   ),
 
+                // Custom Date Range
                 if (selectedOption == 'Custom Date')
                   Row(
                     children: [
@@ -128,12 +126,12 @@ class _ReportPageState extends State<ReportPage> {
                           ),
                           onPressed: () {
                             pickDate(context, (date) {
-                              setState(() {
-                                fromDate = date;
-                              });
+                              setState(() => fromDate = date);
                             });
                           },
-                          child: Text(fromDate == null ? 'From Date' : dateFormat.format(fromDate!)),
+                          child: Text(fromDate == null
+                              ? 'From Date'
+                              : dateFormat.format(fromDate!)),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -148,41 +146,47 @@ class _ReportPageState extends State<ReportPage> {
                           ),
                           onPressed: () {
                             pickDate(context, (date) {
-                              setState(() {
-                                toDate = date;
-                              });
+                              setState(() => toDate = date);
                             });
                           },
-                          child: Text(toDate == null ? 'To Date' : dateFormat.format(toDate!)),
+                          child: Text(toDate == null
+                              ? 'To Date'
+                              : dateFormat.format(toDate!)),
                         ),
                       ),
                     ],
                   ),
 
-                if (selectedOption == 'All Over')
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF0B2E33),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onPressed: () {
-                            pickDate(context, (date) {
-                              setState(() {
-                                allOverDate = date;
-                              });
-                            });
-                          },
-                          child: Text(allOverDate == null ? 'Select Date' : dateFormat.format(allOverDate!)),
+                const SizedBox(height: 20),
+
+                // View Report Button
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                  ),
+                  onPressed: () {
+                    if (selectedOption == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please select a report type")),
+                      );
+                      return;
+                    }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReportViewPage(
+                          reportType: selectedOption!,
+                          userId: userId, // ✅ Dynamic User ID
+                          specificDate: specificDate,
+                          fromDate: fromDate,
+                          toDate: toDate,
                         ),
                       ),
-                    ],
-                  ),
+                    );
+                  },
+                  child: const Text("View Report"),
+                ),
               ],
             ),
           ),
