@@ -15,7 +15,7 @@ class EntryPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title:const Text('Transection List'),
+        title:const Text('Transaction List'),
         backgroundColor: const Color(0xFF0B2E33),
         foregroundColor: Colors.white,
         leading: IconButton(
