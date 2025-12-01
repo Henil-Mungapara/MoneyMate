@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:moneymate/admin/AdminDashboardPage.dart';
+import 'package:moneymate/admin/AdminDBshboardPage.dart';
 import 'package:moneymate/PhoneAuthPage.dart';
 import 'package:moneymate/bottom_navigation_page.dart';
 import 'package:moneymate/forgot_password_page.dart';
