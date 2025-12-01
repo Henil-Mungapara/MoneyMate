@@ -46,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     } else {
       if (!mounted) return;
-      if (userRole == 'rootadmin') {
+      if (!isLoggedOut  && userRole == 'rootadmin') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const RootAdminDashboardPage()),

@@ -44,14 +44,15 @@ dependencies:
   intl: ^0.19.0
   razorpay_flutter: ^1.3.7
   url_launcher: ^6.1.7
-  flutter_launcher_icons: ^0.14.4
   fluttertoast: ^8.2.10
-    # For generating QR codes
+
+  # For generating QR codes
   qr_flutter: ^4.1.0
 
-    # For scanning QR codes (supports mobile + web + desktop)
+  # For scanning QR codes (supports mobile + web + desktop)
   mobile_scanner: ^3.5.3
-  fl_chart: ^0.50.1
+
+  fl_chart: ^0.66.0
   pdf: ^3.11.0
   printing: ^5.10.0
   path_provider: ^2.0.15
@@ -59,29 +60,20 @@ dependencies:
   universal_html: ^2.2.4
   qr_code_tools: ^0.2.0
 
-
-
-
-
-
-
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
 
-# Configuration for generating launcher icons using flutter_launcher_icons
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/moneymate.png" # Make sure this file exists
+  image_path: "assets/images/apklogo.png"
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/apklogo.png"
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -93,7 +85,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/moneymate.png # This is required for flutter_launcher_icons
+    - assets/images/apklogo.png # This is required for flutter_launcher_icons
     - assets/animation/cE3LWBl78L.json
     - assets/fonts/NotoSans-Regular.ttf
 

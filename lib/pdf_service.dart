@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:io' as io;
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,7 +13,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 
 class PdfService {
-  /// ✅ Generate PDF bytes
+  /// Load logo from assets as MemoryImage
+  static Future<pw.MemoryImage> _loadLogo(String path) async {
+    final bytes = await rootBundle.load(path);
+    return pw.MemoryImage(bytes.buffer.asUint8List());
+  }
+
+  /// Generate PDF bytes
   static Future<Uint8List> generatePdfBytes({
     required List<Map<String, dynamic>> data,
     required String userId,
@@ -20,24 +27,24 @@ class PdfService {
     final pdf = pw.Document();
     final df = DateFormat('dd-MM-yyyy');
 
-    // ✅ Fetch username dynamically from users collection
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .get();
+    // Fetch user info
+    final userDoc =
+    await FirebaseFirestore.instance.collection('users').doc(userId).get();
     final username = userDoc.data()?['fullName'] ?? "Unknown User";
 
-    // ✅ Colors
+    // Colors
     const PdfColor primaryColor = PdfColor.fromInt(0xFF0B2E33);
     const PdfColor secondaryColor = PdfColor.fromInt(0xFF4F7C82);
 
-    // ✅ Load clean font
-    final font = pw.Font.ttf(await rootBundle.load("assets/fonts/NotoSans-Regular.ttf"));
+    // Load font
+    final font = pw.Font.ttf(
+      await rootBundle.load("assets/fonts/NotoSans-Regular.ttf"),
+    );
 
-    // ✅ Load logo
-    final logo = await imageFromAssetBundle('assets/images/moneymate.png');
+    // Load logo
+    final logo = await _loadLogo('assets/images/apklogo.png');
 
-    // ✅ Calculate totals
+    // Calculate totals
     double totalIncome = 0;
     double totalExpense = 0;
 
@@ -50,26 +57,29 @@ class PdfService {
       }
     }
 
-    // ✅ Create PDF page
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         build: (context) => [
-          // ✅ Header
+          // HEADER
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
               pw.Row(
                 children: [
-                  pw.Image(logo, width: 75, height: 75),
-                  pw.SizedBox(width: 5),
+                  pw.Container(
+                    width: 60,
+                    height: 60,
+                    child: pw.Image(logo),
+                  ),
+                  pw.SizedBox(width: 10),
                   pw.Text(
                     "MoneyMate",
                     style: pw.TextStyle(
                       font: font,
                       color: primaryColor,
-                      fontSize: 22,
+                      fontSize: 24,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
@@ -83,25 +93,20 @@ class PdfService {
                     style: pw.TextStyle(
                       font: font,
                       fontSize: 14,
-                      color: PdfColors.black,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
                   pw.Text(
                     "Date: ${df.format(DateTime.now())}",
-                    style: pw.TextStyle(
-                      font: font,
-                      fontSize: 12,
-                      color: PdfColors.black,
-                    ),
+                    style: pw.TextStyle(font: font, fontSize: 12),
                   ),
                 ],
               ),
             ],
           ),
-          pw.SizedBox(height: 15),
+          pw.SizedBox(height: 20),
 
-          // ✅ Title
+          // TITLE
           pw.Center(
             child: pw.Text(
               "Transaction Report",
@@ -115,7 +120,7 @@ class PdfService {
           ),
           pw.SizedBox(height: 15),
 
-          // ✅ Table or No Data
+          // TABLE OR NO DATA
           if (data.isEmpty)
             pw.Center(
               child: pw.Text(
@@ -125,13 +130,20 @@ class PdfService {
             )
           else
             pw.Table.fromTextArray(
-              headers: ["No.", "Title", "Amount (₹)", "Date", "Type", "Payment Mode"],
-              data: List<List<String>>.generate(
+              headers: [
+                "No.",
+                "Title",
+                "Amount (₹)",
+                "Date",
+                "Type",
+                "Payment Mode",
+              ],
+              data: List.generate(
                 data.length,
                     (i) => [
                   "${i + 1}",
                   data[i]['title'].toString(),
-                  "₹${data[i]['amount'].toString()}",
+                  "₹${data[i]['amount']}",
                   df.format(data[i]['createdAt'] as DateTime),
                   data[i]['type'].toString(),
                   data[i]['paymentMode'].toString(),
@@ -142,27 +154,14 @@ class PdfService {
                 color: PdfColors.white,
                 fontWeight: pw.FontWeight.bold,
               ),
-              headerDecoration: pw.BoxDecoration(
-                color: primaryColor,
-              ),
-              cellStyle: pw.TextStyle(
-                font: font,
-                fontSize: 11,
-                color: PdfColors.black,
-              ),
+              headerDecoration: pw.BoxDecoration(color: primaryColor),
+              cellStyle: pw.TextStyle(font: font, fontSize: 11),
               cellAlignment: pw.Alignment.center,
-              columnWidths: {
-                0: const pw.FixedColumnWidth(40),
-                1: const pw.FlexColumnWidth(2),
-                2: const pw.FlexColumnWidth(1.2),
-                3: const pw.FlexColumnWidth(1.5),
-                4: const pw.FlexColumnWidth(1.2),
-                5: const pw.FlexColumnWidth(1.5),
-              },
             ),
-          pw.SizedBox(height: 12),
 
-          // ✅ Totals Section
+          pw.SizedBox(height: 15),
+
+          // TOTALS
           if (data.isNotEmpty)
             pw.Container(
               padding: const pw.EdgeInsets.all(10),
@@ -202,7 +201,6 @@ class PdfService {
             ),
         ],
 
-        // ✅ Footer
         footer: (context) => pw.Align(
           alignment: pw.Alignment.center,
           child: pw.Text(
@@ -220,7 +218,7 @@ class PdfService {
     return pdf.save();
   }
 
-  /// ✅ Download or share PDF
+  /// Download or share PDF
   static Future<void> downloadOrSharePdf({
     required List<Map<String, dynamic>> data,
     required String userId,

@@ -1,15 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:moneymate/PaymentHistoryPage.dart';
-import 'package:moneymate/qr_page.dart';
-import 'package:moneymate/qr_scanner_page.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'fillupform_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
-
-
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -103,76 +98,74 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// 🔹 Open Google Pay with given amount
+  void _openGPay(int amount) async {
+    final upiUrl =
+        "upi://pay?pa=yourupiid@okicici&pn=MoneyMate&mc=0000"
+        "&tid=${DateTime.now().millisecondsSinceEpoch}"
+        "&tn=Payment&am=$amount&cu=INR";
 
-  void _showAmountDialog() {
-    final TextEditingController _amountController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Enter Amount"),
-        content: TextField(
-          controller: _amountController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(hintText: "Enter amount to pay"),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final amount = int.tryParse(_amountController.text.trim());
-
-              if (amount == null || amount <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("⚠️ Enter valid amount")),
-                );
-                return;
-              }
-
-              Navigator.pop(context);
-              _openCheckout(amount);
-            },
-            child: const Text("Pay Now"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _openCheckout(int amount) async {
-    _lastPaidAmount = amount;
-
-    if (kIsWeb) {
-      // Web: open Razorpay payment link
-      const url = 'https://rzp.io/rzp/p1RTXb8'; // Replace with your link
-      if (await canLaunch(url)) {
-        await launch(url);
-      } else {
-        throw 'Could not launch $url';
-      }
+    if (await canLaunch(upiUrl)) {
+      await launch(upiUrl);
     } else {
-      // Mobile: use Razorpay plugin
-      var options = {
-        'key': 'rzp_test_RCaZ2jKYT42rIc', // Test Key ID
-        'amount': amount * 100, // in paise
-        'name': 'MoneyMate',
-        'description': 'Custom Amount Payment',
-        'prefill': {'contact': '8888888888', 'email': 'test@example.com'},
-        'external': {'wallets': ['paytm']}
-      };
-
-      try {
-        _razorpay.open(options);
-      } catch (e) {
-        debugPrint('Error: $e');
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("⚠️ Could not open Google Pay")),
+      );
     }
   }
 
+  /// 🔹 Show attractive box to enter amount
+  Future<void> _showAmountDialog() async {
+    final controller = TextEditingController();
 
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Colors.white,
+          title: const Text(
+            "Enter Amount 💰",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              hintText: "e.g. 250",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0B2E33),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                final entered = int.tryParse(controller.text);
+                if (entered != null && entered > 0) {
+                  Navigator.pop(context); // close dialog
+                  _openGPay(entered); // redirect to GPay with amount
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("⚠️ Enter a valid amount")),
+                  );
+                }
+              },
+              child: const Text("Pay Now"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -271,19 +264,13 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
         child: Row(
           children: [
-            // 1. Scanner Button
+            // Google Pay Button
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => QRScannerPage()), // Replace QrPage() with your actual QR page widget
-                  );
-                },
-
-                icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
+                onPressed: _showAmountDialog, // 🔹 open dialog
+                icon: const Icon(Icons.paypal_outlined, color: Colors.white),
                 label: const Text(
-                  "Scan",
+                  "Google Pay",
                   style: TextStyle(color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -297,57 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 8),
 
-            // 2. My QR Button
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyQRPage()), // Replace QrPage() with your actual QR page widget
-                  );
-                },
-                icon: const Icon(Icons.qr_code, color: Colors.white),
-                label: const Text(
-                  "My QR",
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B2E33),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            // 3. History Button (Keep as it is)
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const Paymenthistorypage()),
-                  );
-                },
-                icon: const Icon(Icons.history, color: Colors.white),
-                label: const Text(
-                  "History",
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B2E33),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            // 4. Add Transaction Button (Keep as it is)
+            // Add Transaction Button
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () async {
@@ -375,8 +312,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
-
     );
   }
 
