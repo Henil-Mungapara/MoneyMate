@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:moneymate/admin/AdminDashboardPage.dart';
 import 'package:moneymate/PhoneAuthPage.dart';
 import 'package:moneymate/Bottom_Navigation_Page.dart';
-import 'package:moneymate/forgot_password_page.dart';
+import 'package:moneymate/Forgot_Password_Page.dart';
 import 'package:moneymate/root_admin/RootAdminDashboardPage.dart';
 import 'package:moneymate/signup_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
