@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:moneymate/bottom_navigation_page.dart';
+import 'package:moneymate/Bottom_Navigation_Page.dart';
 
 class OTPVerificationUIDesignPage extends StatelessWidget {
   final String verificationid;

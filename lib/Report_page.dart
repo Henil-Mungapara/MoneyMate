@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moneymate/Chart_page.dart';
-import 'package:moneymate/bottom_navigation_page.dart';
+import 'package:moneymate/Bottom_Navigation_Page.dart';
 import 'report_view_page.dart';
 
 class ReportPage extends StatefulWidget {

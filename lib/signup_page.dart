@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:moneymate/login_page.dart';
-import 'package:moneymate/bottom_navigation_page.dart';
+import 'package:moneymate/Bottom_Navigation_Page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});

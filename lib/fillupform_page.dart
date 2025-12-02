@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:moneymate/bottom_navigation_page.dart';
+import 'package:moneymate/Bottom_Navigation_Page.dart';
 
 class FillUpFormPage extends StatefulWidget {
   final Map<String, dynamic>? existingData;

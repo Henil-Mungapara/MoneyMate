@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
 import 'package:moneymate/getstarted_page.dart';
 import 'package:moneymate/login_page.dart';
-import 'package:moneymate/bottom_navigation_page.dart';
+import 'package:moneymate/Bottom_Navigation_Page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

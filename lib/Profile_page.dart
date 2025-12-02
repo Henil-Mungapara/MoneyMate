@@ -5,7 +5,7 @@ import 'package:moneymate/Home.dart';
 import 'package:moneymate/Report_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'bottom_navigation_page.dart';
+import 'Bottom_Navigation_Page.dart';
 import 'login_page.dart';
 
 class ProfilePage extends StatelessWidget {
