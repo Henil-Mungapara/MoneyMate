@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moneymate/Home.dart';
 import 'package:moneymate/Bottom_Navigation_Page.dart';
 
-import 'fillupform_page.dart';
+import 'Fill_Up_Form.dart';
 
 class EntryPage extends StatelessWidget {
   const EntryPage({super.key});
