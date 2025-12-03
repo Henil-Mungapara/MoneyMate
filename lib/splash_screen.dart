@@ -4,7 +4,7 @@ import 'package:moneymate/admin/AdminDashboardPage.dart';
 import 'package:moneymate/root_admin/RootAdminDashboardPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
-import 'package:moneymate/getstarted_page.dart';
+import 'package:moneymate/GetSatrted_Page.dart';
 import 'package:moneymate/login_page.dart';
 import 'package:moneymate/Bottom_Navigation_Page.dart';
 
