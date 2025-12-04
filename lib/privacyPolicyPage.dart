@@ -35,7 +35,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Text("• Personal Information: Name, Email, Profile Picture", style: TextStyle(color: Colors.black)),
+                    Text("• Your Personal Details: Name, Email, Profile Picture", style: TextStyle(color: Colors.black)),
                     SizedBox(height: 8),
                     Text("• Financial Data: Expenses, Income, Budget Info", style: TextStyle(color: Colors.black)),
                     SizedBox(height: 8),
@@ -54,25 +54,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            CheckboxListTile(
-              title: const Text("I agree to the Terms & Conditions", style: TextStyle(color: Colors.black)),
-              value: _agreeTerms,
-              onChanged: (value) {
-                setState(() => _agreeTerms = value!);
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-              activeColor: Colors.deepPurple,
-            ),
-            CheckboxListTile(
-              title: const Text("I agree to the Privacy Policy", style: TextStyle(color: Colors.black)),
-              value: _agreePrivacy,
-              onChanged: (value) {
-                setState(() => _agreePrivacy = value!);
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-              activeColor: Colors.deepPurple,
-            ),
+            // add code here
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moneymate/privacy_page.dart';
+import 'package:moneymate/privacyPolicyPage.dart';
 
 class GetStartedPage extends StatelessWidget {
   const GetStartedPage({super.key});
