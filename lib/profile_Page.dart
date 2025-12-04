@@ -110,7 +110,16 @@ class ProfilePage extends StatelessWidget {
                   ),
 
                   //add here
-
+                  const SizedBox(height: 20),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  // size box section added
                   const SizedBox(height: 5),
                   Text(email, style: const TextStyle(fontSize: 16, color: Colors.black)),
                   const SizedBox(height: 5),
