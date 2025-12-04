@@ -5,21 +5,13 @@ import 'package:flutter/material.dart';
 class Paymenthistorypage extends StatelessWidget {
   const Paymenthistorypage({super.key});
 
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    if (user == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFB8E3E9),
-        body: Center(
-          child: Text(
-            "User not logged in",
-            style: TextStyle(color: Colors.black),
-          ),
-        ),
-      );
-    }
+    // add code here for showing user not logged in
+
 
     return Scaffold(
       appBar: AppBar(
