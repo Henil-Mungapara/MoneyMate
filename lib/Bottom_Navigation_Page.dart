@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'Chart_page.dart';
 import 'Entry_page.dart';
 import 'Home.dart';
-import 'Profile_page.dart';
+import 'profile_Page.dart';
 import 'Report_page.dart';
 
 class BottomNavigationPage extends StatefulWidget {

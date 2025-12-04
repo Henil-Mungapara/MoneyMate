@@ -108,15 +108,9 @@ class ProfilePage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+
+                  //add here
+
                   const SizedBox(height: 5),
                   Text(email, style: const TextStyle(fontSize: 16, color: Colors.black)),
                   const SizedBox(height: 5),
@@ -137,7 +131,7 @@ class ProfilePage extends StatelessWidget {
                           children: [
                             ListTile(
                               leading: const Icon(Icons.person, color: Colors.teal),
-                              title: const Text("Full Name", style: TextStyle(fontSize: 16)),
+                              title: const Text("full Name", style: TextStyle(fontSize: 16)),
                               subtitle: Text(name, style: TextStyle(fontSize: 14)),
                             ),
                             const Divider(),
@@ -149,7 +143,7 @@ class ProfilePage extends StatelessWidget {
                             const Divider(),
                             ListTile(
                               leading: const Icon(Icons.phone, color: Colors.teal),
-                              title: const Text("Phone", style: TextStyle(fontSize: 16)),
+                              title: const Text("Mobile", style: TextStyle(fontSize: 16)),
                               subtitle: Text(phone, style: TextStyle(fontSize: 14)),
                             ),
                           ],
@@ -166,7 +160,7 @@ class ProfilePage extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () => _logout(context),
                         icon: const Icon(Icons.logout),
-                        label: const Text("Logout"),
+                        label: const Text("logout"),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: const Color(0xFF0B2E33),
