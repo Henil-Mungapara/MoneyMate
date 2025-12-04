@@ -11,7 +11,17 @@ class Paymenthistorypage extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
 
     // add code here for showing user not logged in
-
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFB8E3E9),
+        body: Center(
+          child: Text(
+            "User not logged in",
+            style: TextStyle(color: Colors.black),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
